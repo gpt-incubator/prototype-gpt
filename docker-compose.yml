@@ -1,0 +1,112 @@
+version: '3'
+services: 
+  backend:
+    container_name: backend
+    image: 'backend'
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '5000:5000'
+    depends_on:
+      - 'postgres'
+      - 'redis'   
+    environment:
+      - PostgresUser=PrototypeGPT                    # postgres userName
+      - PostgresPassword=PrototypeGPT                # postgres password
+      - PostgresDb=PrototypeGPT                      # postgres database
+      - SecurityKey=mysecuritykeypleasechangethis # securityKey for the JWT, minimum length is 16 characters
+      - RedisPassword=PrototypeGPT
+      - ApiKey=chatgptapikey
+    networks:
+      - prototype-network
+
+  postgres:    
+    container_name: postgres  
+    image: 'postgres:latest'
+    ports:
+      - '5432:5432'    
+    environment:
+        POSTGRES_USER: 'PrototypeGPT'                # postgres username, needs to be the same defined above 
+        POSTGRES_PASSWORD: 'PrototypeGPT'            # postgres password, needs to be the same defined above 
+        POSTGRES_DB: 'PrototypeGPT'                  # postgres database, needs to be the same defined above 
+    volumes:
+      - 'postgresql-data:/var/lib/postgresql'
+    networks:
+      - prototype-network
+
+  redis:
+    container_name: redis 
+    image: 'redis'
+    ports:
+      - "6379:6379"
+    environment:
+        REDIS_PASSWORD: 'PrototypeGPT'      
+    volumes: 
+      - 'redis-data:/var/lib/redis'
+    networks:
+      - prototype-network
+
+  proxy:
+    container_name: proxy
+    image: nginx:latest
+    ports:
+    - "80:80"
+    depends_on:
+      - 'backend'
+    volumes:
+      - ./config/nginx.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - prototype-network
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - 9090:9090
+    restart: unless-stopped
+    depends_on:
+      - 'backend'
+    volumes:
+      - ./config/prometheus:/etc/prometheus
+      - prometheus-data:/prometheus
+    networks:
+      - prototype-network
+
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    ports:
+      - "3100:3100"
+    depends_on:
+      - 'backend'
+    networks:
+      - prototype-network
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - 3000:3000
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_USER=PrototypeGPT
+      - GF_SECURITY_ADMIN_PASSWORD=PrototypeGPT
+    depends_on:
+      - 'prometheus'  
+      - 'loki'
+    volumes:
+      - ./config/grafana:/etc/grafana/provisioning/datasources
+    networks:
+      - prototype-network
+
+volumes:
+    postgresql-data:
+    redis-data:
+    prometheus-data:   
+
+networks:
+    PrototypeGPT-network:
+        driver: bridge

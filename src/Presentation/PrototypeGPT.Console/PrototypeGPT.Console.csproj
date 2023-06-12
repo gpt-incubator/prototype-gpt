@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Application\PrototypeGPT.Application.Services\PrototypeGPT.Application.Services.csproj" />
+    <ProjectReference Include="..\..\Application\PrototypeGPT.Application\PrototypeGPT.Application.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\PrototypeGPT.Infrastructure.DataAccess\PrototypeGPT.Infrastructure.DataAccess.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\PrototypeGPT.Infrastructure.Identity\PrototypeGPT.Infrastructure.Identity.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\PrototypeGPT.Infrastructure\PrototypeGPT.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>
